@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gerador de Contracheques</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e1ecf4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      width: 300px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 8px;
+      background-color: #4caf50;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gerador de Contracheques</h1>
+  <form>
+    <label for="quantidade">Quantidade de objetos Contracheque:</label>
+    <input type="number" id="quantidade" min="1" max="1000" value="100">
+    <br><br>
+    <label for="inicioCPF">Início da numeração do CPF:</label>
+    <input type="number" id="inicioCPF" min="0" max="99999999999" value="0">
+    <br><br>
+    <button id="gerarBtn">Gerar Contracheques</button>
+  </form>
+
+  <script>
+    function downloadJSON(filename, text) {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    }
+
+    function formatCPF(cpfNumero) {
+      const cpfString = String(cpfNumero).padStart(11, '0');
+      const cpfFormatado = cpfString.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+      return cpfFormatado;
+    }
+
+    document.getElementById('gerarBtn').addEventListener('click', function() {
+      const quantidade = document.getElementById('quantidade').value;
+      const inicioCPF = document.getElementById('inicioCPF').value;
+      const contracheques = {
+        periodo_folha: '2023/08',
+        tipo_folha: 1,
+        contra_cheques: []
+      };
+
+      let cpfNumero = parseInt(inicioCPF);
+      for (let i = 0; i < quantidade; i++) {
+        const cpf = formatCPF(cpfNumero);
+        const contraCheque = {
+          nome: `Funcionário ${i + 1}`,
+          cpf,
+          dt_admissao: '01-16-2024',
+          matricula: `00000${i + 1}`,
+          competencia: '2022/06',
+          total_vencimentos: 5000.00,
+          total_descontos: 1000.00,
+          valor_liquido: 1000.00,
+          salario_contratual: 4500.00,
+          base_irrf: 3000.00,
+          dt_inclusao: '20230705',
+          mes_competencia: 7,
+          ano_competencia: 2023,
+          ic_decimo: false,
+          tipo_holerite: 2,
+          proventos_decontos: [
+            {
+              evento: 'Salário Base',
+              cod_evento: 100,
+              valor_informado: '4500.00',
+              valor_calculado_provento: 4500.00,
+              valor_calculado_desconto: 0.00
+            },
+            {
+              evento: 'INSS',
+              cod_evento: 200,
+              valor_informado: '1000.00',
+              valor_calculado_provento: 0.00,
+              valor_calculado_desconto: 1000.01
+            }
+          ]
+        };
+
+        contracheques.contra_cheques.push(contraCheque);
+
+        cpfNumero++;
+        if (cpfNumero > 99999999999) {
+          cpfNumero = 0;
+        }
+      }
+
+      const jsonContent = JSON.stringify(contracheques, null, 2);
+      downloadJSON('contracheques.txt', jsonContent);
+    });
+  </script>
+</body>
+</html>
